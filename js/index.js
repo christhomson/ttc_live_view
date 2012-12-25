@@ -49,7 +49,7 @@
 		
 		map = new google.maps.Map(document.getElementById('map_canvas'), mapOptions);
 			
-		var updateInterval = 2000;
+		var updateInterval = 1500;
 		if (document.location.search.indexOf("update=") != -1) {
 			updateInterval = document.location.search.substr(document.location.search.indexOf("update=") + 7);
 		}
