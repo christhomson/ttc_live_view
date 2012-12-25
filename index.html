@@ -2,6 +2,9 @@
 <html>
 	<head>
 		<title>Live view of TTC vehicles</title>
+		<meta name="author" content="Chris Thomson">
+		<meta name="description" content="A live view of TTC surface vehicles on a Google map.">
+
 		<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
 		<meta charset="utf-8">
 
@@ -17,5 +20,18 @@
 		<footer>
 			This site contains public sector datasets made available under the City of Toronto's Open Data Licence v2.0. We're not affiliated with the City of Toronto or the TTC. Created by <a href="http://cthomson.ca/" title="Chris Thomson">Chris Thomson</a>.
 	  	</footer>
+		
+		<!-- GA -->
+		<script type="text/javascript">
+			var _gaq = _gaq || [];
+			_gaq.push(['_setAccount', 'UA-2284181-2']);
+			_gaq.push(['_trackPageview']);
+
+			(function() {
+				var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+				ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+				var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+			})();
+		</script>
 	</body>
 </html>
