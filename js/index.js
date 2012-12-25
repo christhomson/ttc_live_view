@@ -30,8 +30,11 @@
   		  	
 			$(data).find('body vehicle').each(function(id, vehicle) {
 				if (!markers[$(vehicle).attr('id')]) {
-					markers[$(vehicle).attr('id')] = new google.maps.Marker({ map: map, title: routes[$(vehicle).attr('routeTag')],
-					 icon: iconForRoute($(vehicle).attr('routeTag'))});
+					markers[$(vehicle).attr('id')] = new google.maps.Marker({ 
+						map: map,
+						title: routes[$(vehicle).attr('routeTag')],
+					 	icon: iconForRoute($(vehicle).attr('routeTag'))
+					});
 				}
 				
 				var marker = markers[$(vehicle).attr('id')];
