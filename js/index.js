@@ -1,6 +1,7 @@
 (function() {
-	var map, markers = {}, lastUpdatedTime = 0;
+	var map, markers = {}, lastUpdatedTime = 0, routes = {};
 	  
+	// Determines if a route is a bus, streetcar, or night bus route.
 	function iconForRoute(route) {
 		if (route >= 500) {
 			return 'img/streetcar.png';
@@ -11,13 +12,25 @@
 		}
 	}
 	
+	// Fetches a mapping of route IDs to route names.
+	function fetchRouteList(cb) {
+		$.get('http://webservices.nextbus.com/service/publicXMLFeed?command=routeList&a=ttc', function(data) {
+			$(data).find('body route').each(function(id, route) {
+				routes[$(route).attr('tag')] = $(route).attr('title');
+			});
+			
+			cb();
+		});
+	}
+	
+	// Fetches only the vehicle locations that have changed since the last pull.
 	function updateVehicleLocations() {
 		$.get('http://webservices.nextbus.com/service/publicXMLFeed?command=vehicleLocations&a=ttc&t=' + lastUpdatedTime, function(data) {
 			lastUpdatedTime = $(data).find('body lastTime').attr('time');
   		  	
 			$(data).find('body vehicle').each(function(id, vehicle) {
 				if (!markers[$(vehicle).attr('id')]) {
-					markers[$(vehicle).attr('id')] = new google.maps.Marker({ map: map, title: $(vehicle).attr('routeTag'),
+					markers[$(vehicle).attr('id')] = new google.maps.Marker({ map: map, title: routes[$(vehicle).attr('routeTag')],
 					 icon: iconForRoute($(vehicle).attr('routeTag'))});
 				}
 				
@@ -41,8 +54,10 @@
 			updateInterval = document.location.search.substr(document.location.search.indexOf("update=") + 7);
 		}
 		
-		updateVehicleLocations();
-		setInterval(updateVehicleLocations, updateInterval);
+		fetchRouteList(function() {
+			updateVehicleLocations();
+			setInterval(updateVehicleLocations, updateInterval);
+		});
 	}
 	  
 	google.maps.event.addDomListener(window, 'load', initialize);
