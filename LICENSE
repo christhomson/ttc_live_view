@@ -1,4 +1,4 @@
-The HTML, CSS, and JS is licensed under the MIT license. The data itself does not fall under this license.
+The HTML, CSS, and JS is licensed under the MIT license. The data itself does not fall under this license, nor do the map icon images.
 
 --
 
@@ -13,3 +13,7 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 --
 
 More information about the license for the data can be found here: http://www1.toronto.ca/wps/portal/open_data/open_data_fact_sheet_details?vgnextoid=59986aa8cc819210VgnVCM10000067d60f89RCRD.
+
+--
+
+The map icon images were created by Nicholas Mollet and are licensed under a Creative Commons Attribute-Share Alike 3.0 Unported license (http://creativecommons.org/licenses/by-sa/3.0/). You can check them out here: http://mapicons.nicolasmollet.com/.

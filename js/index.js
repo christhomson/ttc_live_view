@@ -1,13 +1,24 @@
 (function() {
 	var map, markers = {}, lastUpdatedTime = 0;
 	  
+	function iconForRoute(route) {
+		if (route >= 500) {
+			return 'img/streetcar.png';
+		} else if (route >= 300) {
+			return 'img/night_bus.png';
+		} else {
+			return 'img/bus.png';
+		}
+	}
+	
 	function updateVehicleLocations() {
 		$.get('http://webservices.nextbus.com/service/publicXMLFeed?command=vehicleLocations&a=ttc&t=' + lastUpdatedTime, function(data) {
 			lastUpdatedTime = $(data).find('body lastTime').attr('time');
   		  	
 			$(data).find('body vehicle').each(function(id, vehicle) {
 				if (!markers[$(vehicle).attr('id')]) {
-					markers[$(vehicle).attr('id')] = new google.maps.Marker({ map: map, title: $(vehicle).attr('routeTag') });
+					markers[$(vehicle).attr('id')] = new google.maps.Marker({ map: map, title: $(vehicle).attr('routeTag'),
+					 icon: iconForRoute($(vehicle).attr('routeTag'))});
 				}
 				
 				var marker = markers[$(vehicle).attr('id')];

@@ -13,3 +13,7 @@ footer {
 	opacity: 0.8;
 	padding: 2px 8px 2px 8px;
 }
+
+a, a:visited {
+	color: #000000;
+}
