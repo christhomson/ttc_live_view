@@ -3,10 +3,11 @@ html, body, #map_canvas {
 	margin-bottom: 10px;
 	padding: 0;
 	height: 100%;
+	font-family: Helvetica, sans-serif;
 }
 			
 footer {
-	font-size: small;
+	font-size: 72%; 
 	position: fixed;
 	bottom: 0;
 	background-color: #e8e8e8;
