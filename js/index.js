@@ -2,15 +2,23 @@
 	var map, markers = {}, lastUpdatedTime = 0, routes = {};
 	
 	// Determines the route name, including branch, based on the format RouteNum_Unknown_SpecificRouteNum.
-	function nameForRoute(routeDirTag) {
-		var preciseRoute = routeDirTag.split('_')[2];
-		var routeName = routes[routeDirTag.split('_')[0]].split('-')[1];
+	function nameForRoute(vehicle) {
+		var routeDirTag = $(vehicle).attr('dirTag');
+		var routeTag = $(vehicle).attr('routeTag');
+		var preciseRoute;
 		
-		// If the last letter in the precise route is a capital letter, then it's the branch.
-		if (preciseRoute != preciseRoute.toUpperCase()) {
-			preciseRoute = routeDirTag.split('_')[0]; // Precise route contains route num + non-branch identifier, so display w/o branch.
+		// Find vehicle's branch, if specified.
+		if (routeDirTag !== undefined) {
+			preciseRoute = routeDirTag.split('_')[2];
 		}
 		
+		// Either branch wasn't specified, or branch identifier is not actually a branch.
+		// If the last letter in the precise route is a capital letter, then it's the branch.
+		if (routeDirTag === undefined || preciseRoute != preciseRoute.toUpperCase()) {
+			preciseRoute = routeTag;
+		}
+
+		var routeName = routes[routeTag].split('-')[1];
 		return preciseRoute + " - " + routeName;
 	}
 	
@@ -45,7 +53,7 @@
 				if (!markers[$(vehicle).attr('id')]) {
 					markers[$(vehicle).attr('id')] = new google.maps.Marker({ 
 						map: map,
-						title: nameForRoute($(vehicle).attr('dirTag')),
+						title: nameForRoute(vehicle),
 					 	icon: iconForRoute($(vehicle).attr('routeTag'))
 					});
 				}
