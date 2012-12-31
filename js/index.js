@@ -189,8 +189,8 @@
 					map: map,
 					title: stop.attr('title'),
 					stop: stop,
-					position: new google.maps.LatLng(stop.attr('lat'), stop.attr('lon'))
-				 	// icon: iconForRoute($(vehicle).attr('routeTag')),
+					position: new google.maps.LatLng(stop.attr('lat'), stop.attr('lon')),
+				 	icon: 'img/stop.png'
 					// direction: $(vehicle).attr('dirTag'),
 					// visible: !selectedRoute
 				});
