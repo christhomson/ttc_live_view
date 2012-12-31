@@ -56,9 +56,7 @@
 			var hoveredMarker = marker_positions[event.latLng];
 			var vehicleIDs = Object.keys(markers);
 			
-			if (!routes[hoveredMarker.vehicle.attr('routeTag')]['stops']) {
-				showStopsForVehicle(hoveredMarker.vehicle);
-			}
+			showStopsForVehicle(hoveredMarker.vehicle);
 			
 			for (var i = 0; i < vehicleIDs.length; i++) {
 				var vehicleID = vehicleIDs[i];
@@ -140,9 +138,15 @@
 		});
 	}
 	
+	// Strips the third portion of the direction their API gives us.
+	// This is dumb, but their API does not return results for ALL directions of all branches.
+	function simplifyDirection(direction) {
+		return direction.split('_').slice(0, -1).join('_');
+	}
+	
 	// Fetches information about a given route.
 	function fetchRouteConfig(route, cb) {
-		if (!routes[route]['stops'] || !routes[route]['directions']) {
+		if (routes[route]['stops'] == null || routes[route]['directions'] == null) {
 			$.get('http://webservices.nextbus.com/service/publicXMLFeed?command=routeConfig&a=ttc&r=' + route, function(data) {
 				var route = $($(data).find('body route')[0]),
 					routeTag = route.attr('tag');
@@ -155,11 +159,13 @@
 				});
 
 				$(route).find('> direction').each(function(id, direction) {
-					routes[routeTag]['directions'][$(direction).attr('tag')] = $(direction);
+					routes[routeTag]['directions'][simplifyDirection($(direction).attr('tag'))] = $(direction);
 				});
 			
 				cb();
 			});
+		} else {
+			cb();
 		}
 	}
 	
@@ -167,9 +173,7 @@
 		var route = vehicle.attr('routeTag'),
 			direction = vehicle.attr('dirTag');
 		
-		fetchRouteConfig(route, function() {
-			var stops = Object.keys(routes[route]['stops']);
-			
+		fetchRouteConfig(route, function() {			
 			// Clear stop markers from the previous route that was shown.
 			var previousMarkerIDs = Object.keys(stopMarkers);
 			for (var i = 0; i < previousMarkerIDs.length; i++) {
@@ -178,10 +182,10 @@
 			}
 			
 			// Show stops for this route.
-			for (var i = 0; i < stops.length; i++) {
-				var stop = routes[route]['stops'][stops[i]];
+			$(routes[route]['directions'][simplifyDirection(direction)]).find('> stop').each(function(id, stop) {
+				stop = routes[route]['stops'][$(stop).attr('tag')];
 				
-				stopMarkers[stops[i]] = new google.maps.Marker({ 
+				stopMarkers[$(stop).attr('tag')] = new google.maps.Marker({ 
 					map: map,
 					title: stop.attr('title'),
 					stop: stop,
@@ -190,7 +194,7 @@
 					// direction: $(vehicle).attr('dirTag'),
 					// visible: !selectedRoute
 				});
-			}
+			});
 		});
 	}
 	  
