@@ -47,17 +47,6 @@
 		}
 	}
 	
-	// Fetches a mapping of route IDs to route names.
-	function fetchRouteList(cb) {
-		$.get('http://webservices.nextbus.com/service/publicXMLFeed?command=routeList&a=ttc', function(data) {
-			$(data).find('body route').each(function(id, route) {
-				routes[$(route).attr('tag')] = {name: $(route).attr('title'), vehicleIDs: []};
-			});
-			
-			cb();
-		});
-	}
-	
 	// Hides all markers except all of the markers from the currently-hovered route.
 	function markerMouseOverHandler(event) {
 		clearTimeout(routeViewTimer);
@@ -72,13 +61,13 @@
 				if (markers.hasOwnProperty(vehicleID)) {
 					var markerToDisable = markers[vehicleID];
 
-					if (markerToDisable.route_abbr !== hoveredMarker.route_abbr) {
+					if (markerToDisable.vehicle.attr('routeTag') !== hoveredMarker.vehicle.attr('routeTag')) {
 						markerToDisable.setVisible(false);
 					}
 				}
 			}
 		
-			selectedRoute = hoveredMarker.route_abbr;
+			selectedRoute = hoveredMarker.vehicle.attr('routeTag');
 		}, 250);
 	}
 	
@@ -97,7 +86,7 @@
  	}
 	
 	// Fetches only the vehicle locations that have changed since the last pull.
-	function updateVehicleLocations() {
+	function fetchVehicleLocations() {
 		$.get('http://webservices.nextbus.com/service/publicXMLFeed?command=vehicleLocations&a=ttc&t=' + lastUpdatedTime, function(data) {
 			lastUpdatedTime = $(data).find('body lastTime').attr('time');
   		  	
@@ -107,7 +96,7 @@
 						map: map,
 						title: nameForRoute(vehicle),
 					 	icon: iconForRoute($(vehicle).attr('routeTag')),
-						route_abbr: abbrForVehicle(vehicle),
+						direction: $(vehicle).attr('dirTag'),
 						visible: !selectedRoute
 					});
 				}
@@ -121,9 +110,21 @@
 				delete marker_positions[marker.getPosition()]; // marker might be overwriting an old position, which should be removed.
 				marker_positions[coordinates] = marker;
 				marker.setPosition(coordinates);
+				marker.vehicle = $(vehicle);
 				
 				routes[$(vehicle).attr('routeTag')]['vehicleIDs'].push($(vehicle).attr('id'));
 			});
+		});
+	}
+	
+	// Fetches a mapping of route IDs to route names.
+	function fetchRouteList(cb) {
+		$.get('http://webservices.nextbus.com/service/publicXMLFeed?command=routeList&a=ttc', function(data) {
+			$(data).find('body route').each(function(id, route) {
+				routes[$(route).attr('tag')] = {name: $(route).attr('title'), vehicleIDs: []};
+			});
+			
+			cb();
 		});
 	}
 	  
@@ -142,8 +143,8 @@
 		}
 		
 		fetchRouteList(function() {
-			updateVehicleLocations();
-			setInterval(updateVehicleLocations, updateInterval);
+			fetchVehicleLocations();
+			setInterval(fetchVehicleLocations, updateInterval);
 		});
 	}
 	  
