@@ -1,5 +1,11 @@
 (function() {
-	var map, markers = {}, lastUpdatedTime = 0, routes = {}, marker_positions = {}, selectedRoute = false, timer;
+	var map,
+		markers = {},
+		marker_positions = {},
+		lastUpdatedTime = 0,
+		routes = {},
+		selectedRoute = null,
+		routeViewTimer;
 	
 	
 	// Determines the route number for a vehicle, including its branch.
@@ -54,7 +60,9 @@
 	
 	// Hides all markers except all of the markers from the currently-hovered route.
 	function markerMouseOverHandler(event) {
-		timer = setTimeout(function() {
+		clearTimeout(routeViewTimer);
+		
+		routeViewTimer = setTimeout(function() {
 			var hoveredMarker = marker_positions[event.latLng];
 			var vehicleIDs = Object.keys(markers);
 
@@ -76,6 +84,8 @@
 	
 	// Shows all markers.
 	function markerMouseOutHandler() {
+		selectedRoute = null;
+		
 		var vehicleIDs = Object.keys(markers);
 		for (var i = 0; i < vehicleIDs.length; i++) {
 			if (markers.hasOwnProperty(vehicleIDs[i])) {
@@ -83,7 +93,7 @@
 			}
 		}
 		
-		clearTimeout(timer);
+		clearTimeout(routeViewTimer);
  	}
 	
 	// Fetches only the vehicle locations that have changed since the last pull.
