@@ -1,25 +1,33 @@
 (function() {
-	var map, markers = {}, lastUpdatedTime = 0, routes = {};
+	var map, markers = {}, lastUpdatedTime = 0, routes = {}, marker_positions = {};
 	
-	// Determines the route name, including branch, based on the format RouteNum_Unknown_SpecificRouteNum.
-	function nameForRoute(vehicle) {
-		var routeDirTag = $(vehicle).attr('dirTag');
+	
+	// Determines the route number for a vehicle, including its branch.
+	function abbrForVehicle(vehicle) {
+		var dirTag = $(vehicle).attr('dirTag');
 		var routeTag = $(vehicle).attr('routeTag');
 		var preciseRoute;
 		
 		// Find vehicle's branch, if specified.
-		if (routeDirTag !== undefined) {
-			preciseRoute = routeDirTag.split('_')[2];
+		if (dirTag !== undefined) {
+			preciseRoute = dirTag.split('_')[2];
 		}
 		
 		// Either branch wasn't specified, or branch identifier is not actually a branch.
 		// If the last letter in the precise route is a capital letter, then it's the branch.
-		if (routeDirTag === undefined || preciseRoute != preciseRoute.toUpperCase()) {
+		if (dirTag === undefined || preciseRoute != preciseRoute.toUpperCase()) {
 			preciseRoute = routeTag;
 		}
+		
+		return preciseRoute;
+	}
 
-		var routeName = routes[routeTag].split('-')[1];
-		return preciseRoute + " - " + routeName;
+
+	function nameForRoute(vehicle) {
+		var routeTag = $(vehicle).attr('routeTag'),
+			routeName = routes[routeTag]["name"].split('-')[1];
+		
+		return abbrForVehicle(vehicle) + " - " + routeName;
 	}
 	
 	// Determines if a route is a bus, streetcar, or night bus route.
@@ -37,7 +45,7 @@
 	function fetchRouteList(cb) {
 		$.get('http://webservices.nextbus.com/service/publicXMLFeed?command=routeList&a=ttc', function(data) {
 			$(data).find('body route').each(function(id, route) {
-				routes[$(route).attr('tag')] = $(route).attr('title');
+				routes[$(route).attr('tag')] = {name: $(route).attr('title'), vehicleIDs: []};
 			});
 			
 			cb();
@@ -54,12 +62,36 @@
 					markers[$(vehicle).attr('id')] = new google.maps.Marker({ 
 						map: map,
 						title: nameForRoute(vehicle),
-					 	icon: iconForRoute($(vehicle).attr('routeTag'))
+					 	icon: iconForRoute($(vehicle).attr('routeTag')),
+						route_abbr: abbrForVehicle(vehicle)
 					});
 				}
 				
+				// Only show this route's markers after a hover.
+				google.maps.event.addListener(markers[$(vehicle).attr('id')], "mouseover", function(event) {
+					var hoveredMarker = marker_positions[event.latLng];
+					var vehicleIDs = Object.keys(markers);
+
+					for (var i = 0; i < vehicleIDs.length; i++) {
+						var vehicleID = vehicleIDs[i];
+
+						if (markers.hasOwnProperty(vehicleID)) {
+							var markerToDisable = markers[vehicleID];
+
+							if (markerToDisable.route_abbr !== hoveredMarker.route_abbr) {
+								markerToDisable.setVisible(false);
+							}
+						}
+					}
+				});
+				
 				var marker = markers[$(vehicle).attr('id')];
-				marker.setPosition(new google.maps.LatLng($(vehicle).attr('lat'), $(vehicle).attr('lon')));
+				var coordinates = new google.maps.LatLng($(vehicle).attr('lat'), $(vehicle).attr('lon'));
+				delete marker_positions[marker.getPosition()]; // marker might be overwriting an old position, which should be removed.
+				marker_positions[coordinates] = marker;
+				marker.setPosition(coordinates);
+				
+				routes[$(vehicle).attr('routeTag')]['vehicleIDs'].push($(vehicle).attr('id'));
 			});
 		});
 	}
@@ -72,7 +104,7 @@
 		};
 		
 		map = new google.maps.Map(document.getElementById('map_canvas'), mapOptions);
-			
+		
 		var updateInterval = 1500;
 		if (document.location.search.indexOf("update=") != -1) {
 			updateInterval = document.location.search.substr(document.location.search.indexOf("update=") + 7);
