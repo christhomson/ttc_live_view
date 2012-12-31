@@ -14,7 +14,8 @@
 		
 		// Either branch wasn't specified, or branch identifier is not actually a branch.
 		// If the last letter in the precise route is a capital letter, then it's the branch.
-		if (routeDirTag === undefined || preciseRoute != preciseRoute.toUpperCase()) {
+		if (routeDirTag === undefined 
+			|| preciseRoute.substr(0, routeTag.length) != routeTag || preciseRoute != preciseRoute.toUpperCase()) {
 			preciseRoute = routeTag;
 		}
 
