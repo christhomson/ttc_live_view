@@ -1,6 +1,7 @@
 (function() {
 	var map,
 		markers = {},
+		stopMarkers = {},
 		marker_positions = {},
 		lastUpdatedTime = 0,
 		routes = {},
@@ -54,7 +55,11 @@
 		routeViewTimer = setTimeout(function() {
 			var hoveredMarker = marker_positions[event.latLng];
 			var vehicleIDs = Object.keys(markers);
-
+			
+			if (!routes[hoveredMarker.vehicle.attr('routeTag')]['stops']) {
+				showStopsForVehicle(hoveredMarker.vehicle);
+			}
+			
 			for (var i = 0; i < vehicleIDs.length; i++) {
 				var vehicleID = vehicleIDs[i];
 
@@ -79,6 +84,13 @@
 		for (var i = 0; i < vehicleIDs.length; i++) {
 			if (markers.hasOwnProperty(vehicleIDs[i])) {
 				markers[vehicleIDs[i]].setVisible(true);
+			}
+		}
+		
+		var stopIDs = Object.keys(stopMarkers);
+		for (var i = 0; i < stopIDs.length; i++) {
+			if (stopMarkers.hasOwnProperty(stopIDs[i])) {
+				stopMarkers[stopIDs[i]].setMap(null);
 			}
 		}
 		
@@ -125,6 +137,60 @@
 			});
 			
 			cb();
+		});
+	}
+	
+	// Fetches information about a given route.
+	function fetchRouteConfig(route, cb) {
+		if (!routes[route]['stops'] || !routes[route]['directions']) {
+			$.get('http://webservices.nextbus.com/service/publicXMLFeed?command=routeConfig&a=ttc&r=' + route, function(data) {
+				var route = $($(data).find('body route')[0]),
+					routeTag = route.attr('tag');
+					
+				routes[routeTag]['stops'] = {}, routes[routeTag]['directions'] = {};
+			
+				route.find('> stop').each(function(id, stop) {
+					stop = $(stop);
+					routes[routeTag]['stops'][stop.attr('tag')] = stop;
+				});
+
+				$(route).find('> direction').each(function(id, direction) {
+					routes[routeTag]['directions'][$(direction).attr('tag')] = $(direction);
+				});
+			
+				cb();
+			});
+		}
+	}
+	
+	function showStopsForVehicle(vehicle) {
+		var route = vehicle.attr('routeTag'),
+			direction = vehicle.attr('dirTag');
+		
+		fetchRouteConfig(route, function() {
+			var stops = Object.keys(routes[route]['stops']);
+			
+			// Clear stop markers from the previous route that was shown.
+			var previousMarkerIDs = Object.keys(stopMarkers);
+			for (var i = 0; i < previousMarkerIDs.length; i++) {
+				stopMarkers[previousMarkerIDs[i]].setMap(null);
+				delete stopMarkers[previousMarkerIDs[i]];
+			}
+			
+			// Show stops for this route.
+			for (var i = 0; i < stops.length; i++) {
+				var stop = routes[route]['stops'][stops[i]];
+				
+				stopMarkers[stops[i]] = new google.maps.Marker({ 
+					map: map,
+					title: stop.attr('title'),
+					stop: stop,
+					position: new google.maps.LatLng(stop.attr('lat'), stop.attr('lon'))
+				 	// icon: iconForRoute($(vehicle).attr('routeTag')),
+					// direction: $(vehicle).attr('dirTag'),
+					// visible: !selectedRoute
+				});
+			}
 		});
 	}
 	  
