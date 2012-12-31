@@ -1,5 +1,5 @@
 (function() {
-	var map, markers = {}, lastUpdatedTime = 0, routes = {}, marker_positions = {};
+	var map, markers = {}, lastUpdatedTime = 0, routes = {}, marker_positions = {}, selectedRoute = false, timer;
 	
 	
 	// Determines the route number for a vehicle, including its branch.
@@ -52,6 +52,40 @@
 		});
 	}
 	
+	// Hides all markers except all of the markers from the currently-hovered route.
+	function markerMouseOverHandler(event) {
+		timer = setTimeout(function() {
+			var hoveredMarker = marker_positions[event.latLng];
+			var vehicleIDs = Object.keys(markers);
+
+			for (var i = 0; i < vehicleIDs.length; i++) {
+				var vehicleID = vehicleIDs[i];
+
+				if (markers.hasOwnProperty(vehicleID)) {
+					var markerToDisable = markers[vehicleID];
+
+					if (markerToDisable.route_abbr !== hoveredMarker.route_abbr) {
+						markerToDisable.setVisible(false);
+					}
+				}
+			}
+		
+			selectedRoute = hoveredMarker.route_abbr;
+		}, 250);
+	}
+	
+	// Shows all markers.
+	function markerMouseOutHandler() {
+		var vehicleIDs = Object.keys(markers);
+		for (var i = 0; i < vehicleIDs.length; i++) {
+			if (markers.hasOwnProperty(vehicleIDs[i])) {
+				markers[vehicleIDs[i]].setVisible(true);
+			}
+		}
+		
+		clearTimeout(timer);
+ 	}
+	
 	// Fetches only the vehicle locations that have changed since the last pull.
 	function updateVehicleLocations() {
 		$.get('http://webservices.nextbus.com/service/publicXMLFeed?command=vehicleLocations&a=ttc&t=' + lastUpdatedTime, function(data) {
@@ -63,27 +97,14 @@
 						map: map,
 						title: nameForRoute(vehicle),
 					 	icon: iconForRoute($(vehicle).attr('routeTag')),
-						route_abbr: abbrForVehicle(vehicle)
+						route_abbr: abbrForVehicle(vehicle),
+						visible: !selectedRoute
 					});
 				}
 				
 				// Only show this route's markers after a hover.
-				google.maps.event.addListener(markers[$(vehicle).attr('id')], "mouseover", function(event) {
-					var hoveredMarker = marker_positions[event.latLng];
-					var vehicleIDs = Object.keys(markers);
-
-					for (var i = 0; i < vehicleIDs.length; i++) {
-						var vehicleID = vehicleIDs[i];
-
-						if (markers.hasOwnProperty(vehicleID)) {
-							var markerToDisable = markers[vehicleID];
-
-							if (markerToDisable.route_abbr !== hoveredMarker.route_abbr) {
-								markerToDisable.setVisible(false);
-							}
-						}
-					}
-				});
+				google.maps.event.addListener(markers[$(vehicle).attr('id')], "mouseover", markerMouseOverHandler);
+				google.maps.event.addListener(markers[$(vehicle).attr('id')], "mouseout", markerMouseOutHandler);
 				
 				var marker = markers[$(vehicle).attr('id')];
 				var coordinates = new google.maps.LatLng($(vehicle).attr('lat'), $(vehicle).attr('lon'));
