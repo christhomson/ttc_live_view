@@ -192,8 +192,6 @@
 					stop: stop,
 					position: new google.maps.LatLng(stop.attr('lat'), stop.attr('lon')),
 				 	icon: 'img/stop.png'
-					// direction: $(vehicle).attr('dirTag'),
-					// visible: !selectedRoute
 				});
 			});
 		});
@@ -202,7 +200,7 @@
 	function initialize() {
 		var mapOptions = {
 			zoom: 12,
-			center: new google.maps.LatLng(43.7172467450872, -79.37742082519532),
+			center: new google.maps.LatLng(43.7172467450872, -79.37742082519532), // Toronto
 			mapTypeId: google.maps.MapTypeId.ROADMAP
 		};
 		
