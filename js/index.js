@@ -147,7 +147,7 @@
 	// Fetches information about a given route.
 	function fetchRouteConfig(route, cb) {
 		if (routes[route]['stops'] == null || routes[route]['directions'] == null) {
-			$.get('http://webservices.nextbus.com/service/publicXMLFeed?command=routeConfig&a=ttc&r=' + route, function(data) {
+			$.get('http://webservices.nextbus.com/service/publicXMLFeed?command=routeConfig&a=ttc&verbose&r=' + route, function(data) {
 				var route = $($(data).find('body route')[0]),
 					routeTag = route.attr('tag');
 					
