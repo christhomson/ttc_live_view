@@ -8,7 +8,6 @@
 		selectedRoute = null,
 		routeViewTimer;
 	
-	
 	// Determines the route number for a vehicle, including its branch.
 	function abbrForVehicle(vehicle) {
 		var dirTag = $(vehicle).attr('dirTag');
@@ -160,7 +159,10 @@
 				});
 
 				$(route).find('> direction').each(function(id, direction) {
-					routes[routeTag]['directions'][simplifyDirection($(direction).attr('tag'))] = $(direction);
+          routes[routeTag].directions[$(direction).attr('tag')] = [];
+          $('stop', direction).each(function(id, stop) {
+            routes[routeTag].directions[$(direction).attr('tag')].push($(stop).attr('tag'));
+          });
 				});
 			
 				cb();
@@ -173,7 +175,7 @@
 	function showStopsForVehicle(vehicle) {
 		var route = vehicle.attr('routeTag'),
 			direction = vehicle.attr('dirTag');
-		
+      console.log("Attempting to show stops for route " + route + ", direction " + direction + ".");
 		fetchRouteConfig(route, function() {			
 			// Clear stop markers from the previous route that was shown.
 			var previousMarkerIDs = Object.keys(stopMarkers);
@@ -183,10 +185,10 @@
 			}
 			
 			// Show stops for this route.
-			$(routes[route]['directions'][simplifyDirection(direction)]).find('> stop').each(function(id, stop) {
-				stop = routes[route]['stops'][$(stop).attr('tag')];
+			$(routes[route]['directions'][direction]).each(function(id, stopTag) {
+				stop = $(routes[route]['stops'][stopTag]);
 				
-				stopMarkers[$(stop).attr('tag')] = new google.maps.Marker({ 
+				stopMarkers[stop.attr('tag')] = new google.maps.Marker({ 
 					map: map,
 					title: stop.attr('title'),
 					stop: stop,
