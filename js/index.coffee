@@ -1,6 +1,12 @@
 class Application
-  routes = markers = stopMarkers = markerPositions = {}
+  routes          = {}
+  markers         = {}
+  stopMarkers     = {}
+  markerPositions = {}
   lastUpdatedTime = 0
+  selectedRoute   = null
+  map             = null
+  routeViewTimer  = null
 
   # Determines the route number for a vehicle, including its branch.
   abbrForVehicle: (vehicle) =>
@@ -24,7 +30,7 @@ class Application
     routeTag = $(vehicle).attr 'routeTag'
     routeName = routes[routeTag]['name'].split('-')[1]
 
-    return abbrForVehicle vehicle + " - " + routeName
+    return @abbrForVehicle(vehicle) + " - " + routeName
 
 
   # Determines if a route is a bus, streetcar, or a night bus route.
@@ -38,17 +44,16 @@ class Application
   markerMouseOverHandler: (event) =>
     clearTimeout routeViewTimer
   
-    routeViewTimer = setTimeout ->
+    routeViewTimer = setTimeout =>
       hoveredMarker = markerPositions[event.latLng]
       vehicleIDs = Object.keys markers
 
-      showStopsForVehicle hoveredMarker.vehicle
+      @showStopsForVehicle hoveredMarker.vehicle
 
       for vehicleID in vehicleIDs
-        if marker.hasOwnProperty vehicleID
+        if markers.hasOwnProperty vehicleID
           markerToDisable = markers[vehicleID]
-
-          if markerToDisable.vehicle.attr 'routeTag' isnt hoveredMarker.vehicle.attr 'routeTag'
+          if markerToDisable.vehicle.attr('routeTag') isnt hoveredMarker.vehicle.attr('routeTag')
             markerToDisable.setVisible false
 
    
@@ -58,10 +63,10 @@ class Application
   # Shows all markers.
   markerMouseOutHandler: =>
     selectedRoute = null
-  
+
     for vehicleID in Object.keys markers
       if markers.hasOwnProperty vehicleID
-        markers[vehicle].setVisible true
+        markers[vehicleID].setVisible true
 
     for stopID in Object.keys stopMarkers
       if stopMarkers.hasOwnProperty stopID
@@ -72,13 +77,13 @@ class Application
 
   # Fetches only the vehicle locations that have changed since the last pull.
   fetchVehicleLocations: =>
-    $.get 'http://webservices.nextbus.com/service/publicXMLFeed?command=vehicleLocations&a=ttc&t=' + lastUpdatedTime, (data) ->
+    $.get 'http://webservices.nextbus.com/service/publicXMLFeed?command=vehicleLocations&a=ttc&t=' + lastUpdatedTime, (data) =>
       lastUpdatedTime = $(data).find('body lastTime').attr 'time'
 
       $(data).find('body vehicle').each (id, vehicle) =>
         if not markers[$(vehicle).attr('id')]
           markers[$(vehicle).attr('id')] = new google.maps.Marker {
-            map: @map
+            map: map
             title: @nameForRoute vehicle
             icon: @iconForRoute $(vehicle).attr('routeTag')
             direction: $(vehicle).attr 'dirTag'
@@ -86,8 +91,8 @@ class Application
           }
 
         # Only show this route's markers after a hover.
-        google.maps.event.addListener markers[$(vehicle).attr 'id'], 'mouseover', markerMouseOverHandler
-        google.maps.event.addListener markers[$(vehicle).attr 'id'], 'mouseout', markerMouseOutHandler
+        google.maps.event.addListener markers[$(vehicle).attr 'id'], 'mouseover', @markerMouseOverHandler.bind(@)
+        google.maps.event.addListener markers[$(vehicle).attr 'id'], 'mouseout', @markerMouseOutHandler.bind(@)
       
         marker = markers[$(vehicle).attr 'id'] # would've done this earlier, but we needed to modify the markers array
         coordinates = new google.maps.LatLng $(vehicle).attr('lat'), $(vehicle).attr('lon')
@@ -101,10 +106,10 @@ class Application
 
 
   # Fetches a mapping of route IDs to route names.
-  fetchRouteList: (cb) ->
+  fetchRouteList: (cb) =>
     $.get 'http://webservices.nextbus.com/service/publicXMLFeed?command=routeList&a=ttc', (data) ->
       $(data).find('body route').each (id, route) ->
-        routes[$(route).attr 'tag'] = { name: $(route).attr 'title', vehicleIDs: [] }
+        routes[$(route).attr('tag')] = { name: $(route).attr('title'), vehicleIDs: [] }
 
       cb()
 
@@ -117,18 +122,20 @@ class Application
 
   # Fetches information about a given route.
   fetchRouteConfig: (route, cb) =>
-    if routes[route]['stops'] is null or routes[route]['directions'] is null
-      $.get 'http://webservices.nextbus.com/service/publicXMLFeed?command=routeConfig&a=ttc&r=' + route, (data) ->
+    if !routes[route]['stops']? or !routes[route]['directions']?
+      $.get 'http://webservices.nextbus.com/service/publicXMLFeed?command=routeConfig&a=ttc&verbose&r=' + route, (data) =>
         route = $($(data).find('body route')[0])
         routeTag = route.attr 'tag'
 
-        routes[routeTag]['stops'] = routes[routeTag]['directions'] = {}
-        routes.find('> stop').each (id, stop) ->
+        routes[routeTag]['stops']       = {}
+        routes[routeTag]['directions']  = {}
+        
+        $(route).find('> stop').each (id, stop) ->
           stop = $(stop)
           routes[routeTag]['stops'][stop.attr('tag')] = stop
 
-        $(route).find('> direction').each (id, direction) ->
-          routes[routeTag]['directions'][simplifyDirection $(direction.attr('tag'))] = $(direction)
+        $(route).find('> direction').each (id, direction) =>
+          routes[routeTag]['directions'][@simplifyDirection $(direction).attr('tag')] = $(direction)
       
         cb()
     else
@@ -139,26 +146,26 @@ class Application
     route = vehicle.attr 'routeTag'
     direction = vehicle.attr 'dirTag'
 
-    fetchRouteConfig route, ->
+    @fetchRouteConfig route, =>
       # Clear stop markers from the previous route that was shown.
       for marker in Object.keys stopMarkers
-        stopMarkers[marker].setMap null
-        delete stopMarkers[marker]
-
+        if stopMarkers.hasOwnProperty marker
+          stopMarkers[marker].setMap null
+          delete stopMarkers[marker]
+        
       # Show stops for this route.
-      $(routes[route]['directions'][simplifyDirection direction]).find('> stop').each (id, stop) ->
+      $(routes[route]['directions'][@simplifyDirection direction]).find('> stop').each (id, stop) =>
         stop = routes[route]['stops'][$(stop).attr 'tag']
-
         stopMarkers[$(stop).attr 'tag'] = new google.maps.Marker {
-          map: @map
+          map: map
           title: stop.attr 'title'
           stop: stop
-          position: new google.maps.LatLng(stop.attr 'lat', stop.attr 'lon')
+          position: new google.maps.LatLng(stop.attr('lat'), stop.attr('lon'))
           icon: 'img/stop.png'
         }
 
 
-  initialize: ->
+  constructor: ->
     mapOptions = {
      zoom: 12
      center: new google.maps.LatLng 43.7172467450872, -79.37742082519532 # Toronto
@@ -167,9 +174,14 @@ class Application
 
     map = new google.maps.Map document.getElementById('map_canvas'), mapOptions
 
+    updateInterval = 1500
+    if document.location.search.indexOf("update=") isnt -1
+      updateInterval = document.location.search.substr(document.location.search.indexOf("update") + 7)
+
     @fetchRouteList =>
       @fetchVehicleLocations()
-      setInterval @fetchVehicleLocations, @updateInterval
+      setInterval @fetchVehicleLocations, updateInterval
 
-app = new Application()
-google.maps.event.addDomListener(window, 'load', app.initialize)
+google.maps.event.addDomListener(window, 'load', ->
+  new Application()
+)
