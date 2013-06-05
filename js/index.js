@@ -160,7 +160,10 @@
             return routes[routeTag]['stops'][stop.attr('tag')] = stop;
           });
           $(route).find('> direction').each(function(id, direction) {
-            return routes[routeTag]['directions'][_this.simplifyDirection($(direction).attr('tag'))] = $(direction);
+            routes[routeTag]['directions'][$(direction).attr('tag')] = [];
+            return $('stop', direction).each(function(id, stop) {
+              return routes[routeTag].directions[$(direction).attr('tag')].push($(stop).attr('tag'));
+            });
           });
           return cb();
         });
@@ -186,9 +189,11 @@
             delete stopMarkers[marker];
           }
         }
-        return $(routes[route]['directions'][_this.simplifyDirection(direction)]).find('> stop').each(function(id, stop) {
-          stop = routes[route]['stops'][$(stop).attr('tag')];
-          return stopMarkers[$(stop).attr('tag')] = new google.maps.Marker({
+        return $(routes[route]['directions'][direction]).each(function(id, stopTag) {
+          var stop;
+
+          stop = $(routes[route]['stops'][stopTag]);
+          return stopMarkers[stop.attr('tag')] = new google.maps.Marker({
             map: map,
             title: stop.attr('title'),
             stop: stop,

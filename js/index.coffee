@@ -135,8 +135,11 @@ class Application
           routes[routeTag]['stops'][stop.attr('tag')] = stop
 
         $(route).find('> direction').each (id, direction) =>
-          routes[routeTag]['directions'][@simplifyDirection $(direction).attr('tag')] = $(direction)
-      
+          routes[routeTag]['directions'][$(direction).attr('tag')] = []
+          
+          $('stop', direction).each (id, stop) ->
+            routes[routeTag].directions[$(direction).attr('tag')].push($(stop).attr('tag'))
+
         cb()
     else
       cb()
@@ -154,9 +157,10 @@ class Application
           delete stopMarkers[marker]
         
       # Show stops for this route.
-      $(routes[route]['directions'][@simplifyDirection direction]).find('> stop').each (id, stop) =>
-        stop = routes[route]['stops'][$(stop).attr 'tag']
-        stopMarkers[$(stop).attr 'tag'] = new google.maps.Marker {
+      $(routes[route]['directions'][direction]).each (id, stopTag) =>
+        stop = $(routes[route]['stops'][stopTag])
+
+        stopMarkers[stop.attr 'tag'] = new google.maps.Marker {
           map: map
           title: stop.attr 'title'
           stop: stop
