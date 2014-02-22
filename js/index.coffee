@@ -12,7 +12,7 @@ class Application
   abbrForVehicle: (vehicle) =>
     dirTag = $(vehicle).attr 'dirTag'
     routeTag = $(vehicle).attr 'routeTag'
-  
+
     # Find vehicle's branch, if specified.
     if dirTag isnt undefined
       preciseRoute = dirTag.split('_')[2]
@@ -43,7 +43,7 @@ class Application
   # Hides all markers except those from the currently-hovered route.
   markerMouseOverHandler: (event) =>
     clearTimeout routeViewTimer
-  
+
     routeViewTimer = setTimeout =>
       hoveredMarker = markerPositions[event.latLng]
       vehicleIDs = Object.keys markers
@@ -56,7 +56,7 @@ class Application
           if markerToDisable.vehicle.attr('routeTag') isnt hoveredMarker.vehicle.attr('routeTag')
             markerToDisable.setVisible false
 
-   
+
       selectedRoute = hoveredMarker.vehicle.attr 'routeTag'
 
 
@@ -93,7 +93,7 @@ class Application
         # Only show this route's markers after a hover.
         google.maps.event.addListener markers[$(vehicle).attr 'id'], 'mouseover', @markerMouseOverHandler.bind(@)
         google.maps.event.addListener markers[$(vehicle).attr 'id'], 'mouseout', @markerMouseOutHandler.bind(@)
-      
+
         marker = markers[$(vehicle).attr 'id'] # would've done this earlier, but we needed to modify the markers array
         coordinates = new google.maps.LatLng $(vehicle).attr('lat'), $(vehicle).attr('lon')
         delete markerPositions[marker.getPosition()] # marker might be overwriting an old position, which should be removed.
@@ -129,14 +129,14 @@ class Application
 
         routes[routeTag]['stops']       = {}
         routes[routeTag]['directions']  = {}
-        
+
         $(route).find('> stop').each (id, stop) ->
           stop = $(stop)
           routes[routeTag]['stops'][stop.attr('tag')] = stop
 
         $(route).find('> direction').each (id, direction) =>
           routes[routeTag]['directions'][$(direction).attr('tag')] = []
-          
+
           $('stop', direction).each (id, stop) ->
             routes[routeTag].directions[$(direction).attr('tag')].push($(stop).attr('tag'))
 
@@ -155,7 +155,7 @@ class Application
         if stopMarkers.hasOwnProperty marker
           stopMarkers[marker].setMap null
           delete stopMarkers[marker]
-        
+
       # Show stops for this route.
       $(routes[route]['directions'][direction]).each (id, stopTag) =>
         stop = $(routes[route]['stops'][stopTag])
@@ -171,9 +171,9 @@ class Application
 
   constructor: ->
     mapOptions = {
-     zoom: 12
-     center: new google.maps.LatLng 43.7172467450872, -79.37742082519532 # Toronto
-     mapTypeId: google.maps.MapTypeId.ROADMAP
+      zoom: 12
+      center: new google.maps.LatLng 43.7172467450872, -79.37742082519532 # Toronto
+      mapTypeId: google.maps.MapTypeId.ROADMAP
     }
 
     map = new google.maps.Map document.getElementById('map_canvas'), mapOptions

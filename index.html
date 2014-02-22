@@ -1,30 +1,30 @@
 <!DOCTYPE html>
 <html>
-	<head>
-		<title>Live view of TTC vehicles</title>
-		<meta name="author" content="Chris Thomson">
-		<meta name="description" content="A live view of TTC surface vehicles on a Google map.">
+  <head>
+    <title>Live view of TTC vehicles</title>
+    <meta name="author" content="Chris Thomson">
+    <meta name="description" content="A live view of TTC surface vehicles on a Google map.">
 
-		<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-		<meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta charset="utf-8">
 
-		<link rel="stylesheet" type="text/css" href="css/index.css" />
-		
-		<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js"></script>
-		<script src="https://maps.googleapis.com/maps/api/js?v=3.exp&sensor=false"></script>
-		<script src="js/compiled/index.js"></script>
-		
-		<!-- Analytics by Segment.io -->
-		<script type="text/javascript">
-		      var analytics=analytics||[];(function(){var e=["identify","track","trackLink","trackForm","trackClick","trackSubmit","page","pageview","ab","alias","ready","group"],t=function(e){return function(){analytics.push([e].concat(Array.prototype.slice.call(arguments,0)))}};for(var n=0;n<e.length;n++)analytics[e[n]]=t(e[n])})(),analytics.load=function(e){var t=document.createElement("script");t.type="text/javascript",t.async=!0,t.src=("https:"===document.location.protocol?"https://":"http://")+"d2dq2ahtl5zl1z.cloudfront.net/analytics.js/v1/"+e+"/analytics.min.js";var n=document.getElementsByTagName("script")[0];n.parentNode.insertBefore(t,n)};
-		      analytics.load("qnz8tb8lff");
-		    </script>
-	</head>
-	<body>
-		<div id="map_canvas"></div>
-		
-		<footer>
-			This site contains public sector datasets made available under the <a href="http://www1.toronto.ca/wps/portal/open_data/open_data_fact_sheet_details?vgnextoid=59986aa8cc819210VgnVCM10000067d60f89RCRD">City of Toronto's Open Data Licence v2.0</a>. We're not affiliated with the City of Toronto or the TTC. Created by <a href="http://cthomson.ca/" title="Chris Thomson">Chris Thomson</a>.
-		</footer>
-	</body>
+    <link rel="stylesheet" type="text/css" href="css/index.css" />
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js"></script>
+    <script src="https://maps.googleapis.com/maps/api/js?v=3.exp&sensor=false"></script>
+    <script src="js/compiled/index.js"></script>
+
+    <!-- Analytics by Segment.io -->
+    <script type="text/javascript">
+    var analytics=analytics||[];(function(){var e=["identify","track","trackLink","trackForm","trackClick","trackSubmit","page","pageview","ab","alias","ready","group"],t=function(e){return function(){analytics.push([e].concat(Array.prototype.slice.call(arguments,0)))}};for(var n=0;n<e.length;n++)analytics[e[n]]=t(e[n])})(),analytics.load=function(e){var t=document.createElement("script");t.type="text/javascript",t.async=!0,t.src=("https:"===document.location.protocol?"https://":"http://")+"d2dq2ahtl5zl1z.cloudfront.net/analytics.js/v1/"+e+"/analytics.min.js";var n=document.getElementsByTagName("script")[0];n.parentNode.insertBefore(t,n)};
+    analytics.load("qnz8tb8lff");
+    </script>
+  </head>
+  <body>
+    <div id="map_canvas"></div>
+
+    <footer>
+      This site contains public sector datasets made available under the <a href="http://www1.toronto.ca/wps/portal/open_data/open_data_fact_sheet_details?vgnextoid=59986aa8cc819210VgnVCM10000067d60f89RCRD">City of Toronto's Open Data Licence v2.0</a>. We're not affiliated with the City of Toronto or the TTC. Created by <a href="http://cthomson.ca/" title="Chris Thomson">Chris Thomson</a>.
+    </footer>
+  </body>
 </html>

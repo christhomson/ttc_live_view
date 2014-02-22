@@ -1,20 +1,20 @@
 html, body, #map_canvas {
-	margin: 0;
-	margin-bottom: 10px;
-	padding: 0;
-	height: 100%;
-	font-family: Helvetica, sans-serif;
+  margin: 0;
+  margin-bottom: 10px;
+  padding: 0;
+  height: 100%;
+  font-family: Helvetica, sans-serif;
 }
-			
+
 footer {
-	font-size: 71%; 
-	position: fixed;
-	bottom: 0;
-	background-color: #e8e8e8;
-	opacity: 0.85;
-	padding: 2px 8px 2px 8px;
+  font-size: 71%; 
+  position: fixed;
+  bottom: 0;
+  background-color: #e8e8e8;
+  opacity: 0.85;
+  padding: 2px 8px 2px 8px;
 }
 
 a, a:visited {
-	color: #000;
+  color: #000;
 }
